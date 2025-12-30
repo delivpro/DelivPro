@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Suas camadas personalizadas abaixo */
+@layer base {
+  body {
+    @apply bg-[#0f172a] text-slate-100 font-sans;
+  }
+}
