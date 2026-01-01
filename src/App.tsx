@@ -18,58 +18,57 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      checkUserRole(session?.user?.id);
+    // Busca sessão inicial
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      if (currentSession) checkUserRole(currentSession.user?.id);
+      else setLoading(false);
     });
 
-    // Mudança de autenticação
-    const { data: { subscription } } =
-      supabase.auth.onAuthStateChange((_event, session) => {
-        setSession(session);
-        checkUserRole(session?.user?.id);
-      });
+    // Escuta mudanças (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      if (currentSession) checkUserRole(currentSession.user?.id);
+      else {
+        setIsAdmin(false);
+        setLoading(false);
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const checkUserRole = async (userId?: string) => {
-    if (!userId) {
-      setIsAdmin(false);
+    if (!userId) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      setIsAdmin(data?.role === 'admin');
+    } catch (error) {
+      console.error("Erro ao checar perfil:", error);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    setIsAdmin(data?.role === 'admin');
-    setLoading(false);
   };
 
-  // Loading global
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-slate-700 border-t-[#76e85b] rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <Routes>
-
-      {/* LOGIN (PÚBLICO) */}
       <Route
         path="/login"
         element={session ? <Navigate to="/" replace /> : <Login />}
       />
 
-      {/* ROTAS PROTEGIDAS */}
       <Route
         path="/"
         element={
@@ -78,13 +77,11 @@ function App() {
             : <Navigate to="/login" replace />
         }
       >
-        {/* HOME */}
         <Route
           index
           element={isAdmin ? <Navigate to="/admin" /> : <Dashboard />}
         />
 
-        {/* ROTAS DO MOTORISTA */}
         {!isAdmin && (
           <>
             <Route path="entrega" element={<DeliveryForm />} />
@@ -93,18 +90,14 @@ function App() {
           </>
         )}
 
-        {/* CONFIGURAÇÕES */}
         <Route path="configuracoes" element={<Settings />} />
 
-        {/* ADMIN */}
         {isAdmin && (
           <Route path="admin" element={<AdminPanel />} />
         )}
       </Route>
 
-      {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/login" replace />} />
-
     </Routes>
   );
 }
