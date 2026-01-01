@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 
-// Componentes de Layout e Telas
+// Telas
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import DeliveryForm from './components/DeliveryForm';
@@ -10,6 +10,7 @@ import ExpenseForm from './components/ExpenseForm';
 import Reports from './components/Reports';
 import Settings from './components/Settings';
 import AdminPanel from './components/AdminPanel';
+import Login from './components/Login';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -17,25 +18,29 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sessão ativa e papel do usuário (Role)
+    // Sessão inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       checkUserRole(session?.user?.id);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      checkUserRole(session?.user?.id);
-    });
+    // Mudança de autenticação
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+        checkUserRole(session?.user?.id);
+      });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkUserRole = async (userId: string | undefined) => {
+  const checkUserRole = async (userId?: string) => {
     if (!userId) {
+      setIsAdmin(false);
       setLoading(false);
       return;
     }
+
     const { data } = await supabase
       .from('profiles')
       .select('role')
@@ -46,6 +51,7 @@ function App() {
     setLoading(false);
   };
 
+  // Loading global
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
@@ -56,15 +62,29 @@ function App() {
 
   return (
     <Routes>
-      {/* O Layout envolve todas as rotas internas. 
-        Passamos isAdmin para o Layout renderizar ou não o menu de admin.
-      */}
-      <Route path="/" element={<Layout isAdmin={isAdmin} />}>
 
-        {/* Rota Inicial: Dashboard para Motoristas, Admin vai para lista de usuários */}
-        <Route index element={isAdmin ? <Navigate to="/admin" /> : <Dashboard />} />
+      {/* LOGIN (PÚBLICO) */}
+      <Route
+        path="/login"
+        element={session ? <Navigate to="/" replace /> : <Login />}
+      />
 
-        {/* Rotas Operacionais do Motorista */}
+      {/* ROTAS PROTEGIDAS */}
+      <Route
+        path="/"
+        element={
+          session
+            ? <Layout isAdmin={isAdmin} />
+            : <Navigate to="/login" replace />
+        }
+      >
+        {/* HOME */}
+        <Route
+          index
+          element={isAdmin ? <Navigate to="/admin" /> : <Dashboard />}
+        />
+
+        {/* ROTAS DO MOTORISTA */}
         {!isAdmin && (
           <>
             <Route path="entrega" element={<DeliveryForm />} />
@@ -73,17 +93,18 @@ function App() {
           </>
         )}
 
-        {/* Rota de Configurações (Comum para ambos, mas com visões diferentes no componente) */}
+        {/* CONFIGURAÇÕES */}
         <Route path="configuracoes" element={<Settings />} />
 
-        {/* Rota Exclusiva do Administrador */}
+        {/* ADMIN */}
         {isAdmin && (
           <Route path="admin" element={<AdminPanel />} />
         )}
-
-        {/* Fallback para rotas não encontradas */}
-        <Route path="*" element={<Navigate to="/" />} />
       </Route>
+
+      {/* FALLBACK */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+
     </Routes>
   );
 }
