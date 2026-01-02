@@ -11,51 +11,46 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const Logo: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => (
-  <svg 
-    viewBox="0 0 512 512" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className={`transition-all duration-300 ${isCollapsed ? 'w-10 h-10' : 'w-32 h-32'}`}
-  >
-    <g transform="translate(40, 40) scale(0.85)">
-      <rect x="0" y="120" width="50" height="15" rx="7.5" fill="#76e85b" />
-      <rect x="-20" y="150" width="70" height="15" rx="7.5" fill="#76e85b" />
-      <rect x="0" y="180" width="50" height="15" rx="7.5" fill="#76e85b" />
+export const Logo: React.FC<{ isCollapsed: boolean; className?: string }> = ({ isCollapsed, className }) => (
+  <div className={`flex flex-col items-center justify-center transition-all duration-300 ${className}`}>
+    <svg 
+      viewBox="0 0 500 350" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={`${isCollapsed ? 'w-12 h-12' : 'w-40 h-auto'}`}
+    >
+      {/* Linhas de movimento */}
+      <rect x="50" y="140" width="40" height="12" rx="6" fill="#76e85b" opacity="0.8" />
+      <rect x="40" y="170" width="60" height="12" rx="6" fill="#76e85b" opacity="0.8" />
+      <rect x="60" y="200" width="30" height="12" rx="6" fill="#76e85b" opacity="0.8" />
+      
+      {/* Corpo da Van */}
       <path 
-        d="M80 80H350C380 80 400 100 415 130L440 180H460C475 180 485 190 485 205V280C485 295 475 305 460 305H440C440 280 420 260 395 260C370 260 350 280 350 305H200C200 280 180 260 155 260C130 260 110 280 110 305H85C70 305 60 295 60 280V95C60 87 67 80 75 80H80Z" 
+        d="M120 120H330C355 120 375 135 390 160L415 220C425 240 435 250 455 250H465V290C465 300 455 310 445 310H430C430 285 410 265 385 265C360 265 340 285 340 310H200C200 285 180 265 155 265C130 265 110 285 110 310H100C90 310 80 300 80 290V135C80 127 87 120 95 120H120Z" 
         fill="#76e85b" 
       />
-      <path 
-        d="M330 100H360L405 180H330V100Z" 
-        fill="#0a0a0a" 
-        fillOpacity="0.4" 
-      />
-      <path 
-        d="M345 130C345 118 355 110 365 110C375 110 385 118 385 130C385 142 375 150 365 150C355 150 345 142 345 130Z" 
-        fill="#76e85b" 
-      />
-      <path 
-        d="M350 160C340 160 330 170 330 185H400C400 170 390 160 380 160H350Z" 
-        fill="#76e85b" 
-      />
-      <circle cx="155" cy="305" r="30" fill="#76e85b" />
-      <circle cx="155" cy="305" r="12" fill="#0a0a0a" />
-      <circle cx="395" cy="305" r="30" fill="#76e85b" />
-      <circle cx="395" cy="305" r="12" fill="#0a0a0a" />
-    </g>
+      
+      {/* Janela e Motorista (Silhueta) */}
+      <path d="M320 135H350L395 220H320V135Z" fill="#0a0a0a" fillOpacity="0.4" />
+      <circle cx="355" cy="170" r="22" fill="#0a0a0a" fillOpacity="0.6" />
+      
+      {/* Rodas */}
+      <circle cx="155" cy="310" r="35" fill="#76e85b" />
+      <circle cx="155" cy="310" r="14" fill="#0a0a0a" />
+      <circle cx="385" cy="310" r="35" fill="#76e85b" />
+      <circle cx="385" cy="310" r="14" fill="#0a0a0a" />
+    </svg>
+    
     {!isCollapsed && (
-      <text 
-        x="256" 
-        y="460" 
-        textAnchor="middle"
-        fill="#76e85b" 
-        style={{ font: 'bold 90px Inter, sans-serif', letterSpacing: '-2px' }}
-      >
-        DelivPro
-      </text>
+      <div className="mt-2 text-center select-none">
+        <div className="flex items-center justify-center font-bold text-4xl tracking-tighter">
+          <span className="text-white">Deliv</span>
+          <span className="text-[#ef4444]">Pro</span>
+        </div>
+        <div className="text-[#76e85b] font-express text-2xl -mt-2 italic">Express</div>
+      </div>
     )}
-  </svg>
+  </div>
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapsed, setIsCollapsed, onLogout }) => {
@@ -66,11 +61,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
   ];
 
   return (
-    <aside className={`hidden md:flex bg-card border-r border-border transition-all duration-300 flex-col h-screen sticky top-0 ${isCollapsed ? 'w-20' : 'w-64'}`}>
-      <div className={`p-4 flex flex-col items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'h-24' : 'h-48'} justify-center relative group`}>
-        <div className="transition-transform duration-300 group-hover:scale-105">
-          <Logo isCollapsed={isCollapsed} />
-        </div>
+    <aside className={`hidden md:flex bg-card border-r border-border transition-all duration-300 flex-col h-screen sticky top-0 ${isCollapsed ? 'w-24' : 'w-72'}`}>
+      <div className={`p-6 flex flex-col items-center border-b border-border transition-all duration-300 ${isCollapsed ? 'h-24' : 'h-64'} justify-center relative group`}>
+        <Logo isCollapsed={isCollapsed} />
         
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}

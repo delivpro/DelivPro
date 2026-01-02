@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { LogIn, Lock, Mail, AlertCircle } from 'lucide-react';
-import { User } from '../types';
+import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Logo } from './Sidebar';
 
 interface LoginProps {
   onLogin: (email: string, pass: string) => void;
@@ -24,12 +24,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, error }) => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
       
       <div className="w-full max-w-md bg-card border border-border p-8 rounded-3xl shadow-2xl relative z-10">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-4">
-            <LogIn size={40} className="text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-white">DelivPro</h1>
-          <p className="text-gray-400 mt-2">Gestão profissional para entregadores</p>
+        <div className="text-center mb-8">
+          <Logo isCollapsed={false} className="scale-110 mb-2" />
+          <p className="text-gray-400 mt-4">Gestão profissional para entregadores</p>
         </div>
 
         {error && (
@@ -80,7 +77,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error }) => {
 
         <div className="mt-8 text-center">
           <p className="text-gray-500 text-xs">
-            © 2024 DelivPro Systems. Acesso restrito a usuários autorizados.
+            © 2024 DelivPro Express. Acesso restrito a usuários autorizados.
           </p>
         </div>
       </div>

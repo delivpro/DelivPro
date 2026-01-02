@@ -1,0 +1,18 @@
+
+{
+  "name": "DelivPro Express",
+  "short_name": "DelivPro",
+  "description": "Gestão Profissional para Entregadores",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#76e85b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/411/411712.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
