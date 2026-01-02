@@ -91,10 +91,10 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onOpenDelivery, onOpenExpe
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        <StatsCard label="Saldo Total" value={formatCurrency(stats.balance)} icon={Wallet} trend="+12%" trendType="up" />
+        <StatsCard label="Saldo Total" value={formatCurrency(stats.balance)} icon={Wallet} />
         <StatsCard label="Km Rodado" value={formatKm(stats.totalKm)} icon={Navigation} />
         <StatsCard label="Entregas" value={stats.qtyDeliveries.toString()} icon={Package} />
-        <StatsCard label="Despesas" value={formatCurrency(stats.totalExpenses)} icon={Receipt} trend="-5%" trendType="down" />
+        <StatsCard label="Despesas" value={formatCurrency(stats.totalExpenses)} icon={Receipt} />
         <StatsCard label="Autonomia" value={stats.autonomy} icon={Fuel} />
       </div>
 
