@@ -20,6 +20,7 @@ export interface Delivery {
   userId: string; // Vínculo com o usuário
   date: string;
   platform: string;
+  warehouse?: string; // Específico para Amazon Flex
   startTime: string;
   endTime?: string;
   startKm: number;
@@ -49,6 +50,7 @@ export interface AppState {
   vehicle: Vehicle;
   categories: string[];
   platforms: string[];
+  warehouses: string[]; // Cadastro de barracões para Amazon Flex
   apiUrl?: string;
   isSyncEnabled: boolean;
 }

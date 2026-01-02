@@ -104,8 +104,10 @@ const App: React.FC = () => {
           userId: state.currentUser.id,
           date: deliveryData.date!,
           platform: deliveryData.platform!,
+          warehouse: deliveryData.warehouse,
           startTime: deliveryData.startTime!,
           startKm: deliveryData.startKm!,
+          value: deliveryData.value, // Pode vir preenchido no início (Amazon Flex)
           status: 'ongoing',
         };
     setState(prev => {
@@ -189,6 +191,8 @@ const App: React.FC = () => {
             onRemoveCategory={c => setState(prev => ({ ...prev, categories: prev.categories.filter(cat => cat !== c) }))}
             onAddPlatform={p => setState(prev => ({ ...prev, platforms: [...prev.platforms, p] }))}
             onRemovePlatform={p => setState(prev => ({ ...prev, platforms: prev.platforms.filter(plat => plat !== p) }))}
+            onAddWarehouse={w => setState(prev => ({ ...prev, warehouses: [...prev.warehouses, w] }))}
+            onRemoveWarehouse={w => setState(prev => ({ ...prev, warehouses: prev.warehouses.filter(wh => wh !== w) }))}
             onUpdateApiSettings={(url, enabled) => setState(prev => ({ ...prev, apiUrl: url, isSyncEnabled: enabled }))}
             onAddUser={handleAddUser} onUpdateUser={handleUpdateUser} onDeleteUser={handleDeleteUser}
           />
@@ -215,7 +219,15 @@ const App: React.FC = () => {
         </button>
       </nav>
 
-      {isDeliveryModalOpen && <DeliveryForm onClose={() => setIsDeliveryModalOpen(false)} onSubmit={handleAddDelivery} activeDelivery={activeDelivery} platforms={state.platforms} />}
+      {isDeliveryModalOpen && (
+        <DeliveryForm 
+          onClose={() => setIsDeliveryModalOpen(false)} 
+          onSubmit={handleAddDelivery} 
+          activeDelivery={activeDelivery} 
+          platforms={state.platforms}
+          warehouses={state.warehouses} 
+        />
+      )}
       {isExpenseModalOpen && <ExpenseForm onClose={() => setIsExpenseModalOpen(false)} onSubmit={handleAddExpense} categories={state.categories} />}
     </div>
   );

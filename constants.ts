@@ -19,6 +19,10 @@ export const INITIAL_PLATFORMS = [
   'Amazon Flex', 'UberEats', 'PickGo', 'Rappi', 'Particular'
 ];
 
+export const INITIAL_WAREHOUSES = [
+  'DPR1 - Ibaraki', 'DPR2 - Saitama', 'DPR3 - Tokyo'
+];
+
 export const STORAGE_KEY = 'delivpro_data_v2';
 
 export const DEFAULT_STATE: AppState = {
@@ -33,6 +37,7 @@ export const DEFAULT_STATE: AppState = {
   },
   categories: INITIAL_CATEGORIES,
   platforms: INITIAL_PLATFORMS,
+  warehouses: INITIAL_WAREHOUSES,
   isSyncEnabled: false,
   apiUrl: ''
 };

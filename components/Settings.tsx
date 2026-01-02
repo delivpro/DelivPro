@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Truck, Tag, Plus, Trash2, Save, Layout, Database, Globe, RefreshCw, Users } from 'lucide-react';
+import { Truck, Tag, Plus, Trash2, Save, Layout, Database, Globe, RefreshCw, Users, Warehouse } from 'lucide-react';
 import { AppState, Vehicle, User } from '../types';
 import UserManagement from './UserManagement';
 
@@ -11,6 +11,8 @@ interface SettingsProps {
   onRemoveCategory: (c: string) => void;
   onAddPlatform: (p: string) => void;
   onRemovePlatform: (p: string) => void;
+  onAddWarehouse: (w: string) => void;
+  onRemoveWarehouse: (w: string) => void;
   onUpdateApiSettings: (url: string, enabled: boolean) => void;
   onAddUser: (user: Partial<User>) => void;
   onUpdateUser: (user: User) => void;
@@ -24,6 +26,8 @@ const Settings: React.FC<SettingsProps> = ({
   onRemoveCategory,
   onAddPlatform,
   onRemovePlatform,
+  onAddWarehouse,
+  onRemoveWarehouse,
   onUpdateApiSettings,
   onAddUser,
   onUpdateUser,
@@ -34,6 +38,7 @@ const Settings: React.FC<SettingsProps> = ({
   const [vehicleData, setVehicleData] = useState(state.vehicle);
   const [newCat, setNewCat] = useState('');
   const [newPlat, setNewPlat] = useState('');
+  const [newWh, setNewWh] = useState('');
   const [apiUrl, setApiUrl] = useState(state.apiUrl || '');
   const [syncEnabled, setSyncEnabled] = useState(state.isSyncEnabled);
 
@@ -113,21 +118,42 @@ const Settings: React.FC<SettingsProps> = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Apps */}
             <div className="bg-card p-6 rounded-2xl border border-border">
               <h3 className="text-lg font-bold text-white mb-4">Plataformas</h3>
               <div className="flex gap-2 mb-4">
                 <input type="text" value={newPlat} onChange={e => setNewPlat(e.target.value)} className="flex-1 bg-dark border border-border rounded-xl px-4 py-2 text-white outline-none focus:border-primary" />
-                <button onClick={() => {onAddPlatform(newPlat); setNewPlat('');}} className="p-3 bg-primary text-dark rounded-xl"><Plus size={20}/></button>
+                <button onClick={() => {if(newPlat) {onAddPlatform(newPlat); setNewPlat('');}}} className="p-3 bg-primary text-dark rounded-xl"><Plus size={20}/></button>
               </div>
               <div className="space-y-2">
                 {state.platforms.map(p => (
                   <div key={p} className="flex items-center justify-between p-3 bg-dark rounded-xl border border-border">
-                    <span className="text-gray-300">{p}</span>
+                    <span className="text-gray-300 text-sm">{p}</span>
                     <button onClick={() => onRemovePlatform(p)} className="text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Barracões Amazon Flex */}
+            <div className="bg-card p-6 rounded-2xl border border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <Warehouse size={18} className="text-primary" />
+                <h3 className="text-lg font-bold text-white">Barracões (Flex)</h3>
+              </div>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={newWh} onChange={e => setNewWh(e.target.value)} className="flex-1 bg-dark border border-border rounded-xl px-4 py-2 text-white outline-none focus:border-primary" placeholder="Novo barracão" />
+                <button onClick={() => {if(newWh) {onAddWarehouse(newWh); setNewWh('');}}} className="p-3 bg-primary text-dark rounded-xl"><Plus size={20}/></button>
+              </div>
+              <div className="space-y-2">
+                {state.warehouses.map(w => (
+                  <div key={w} className="flex items-center justify-between p-3 bg-dark rounded-xl border border-border">
+                    <span className="text-gray-300 text-sm">{w}</span>
+                    <button onClick={() => onRemoveWarehouse(w)} className="text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
+                  </div>
+                ))}
+                {state.warehouses.length === 0 && <p className="text-xs text-gray-500 italic text-center py-4">Nenhum barracão cadastrado.</p>}
               </div>
             </div>
 
@@ -136,12 +162,12 @@ const Settings: React.FC<SettingsProps> = ({
               <h3 className="text-lg font-bold text-white mb-4">Categorias</h3>
               <div className="flex gap-2 mb-4">
                 <input type="text" value={newCat} onChange={e => setNewCat(e.target.value)} className="flex-1 bg-dark border border-border rounded-xl px-4 py-2 text-white outline-none focus:border-primary" />
-                <button onClick={() => {onAddCategory(newCat); setNewCat('');}} className="p-3 bg-white/10 text-white rounded-xl border border-white/10"><Plus size={20}/></button>
+                <button onClick={() => {if(newCat) {onAddCategory(newCat); setNewCat('');}}} className="p-3 bg-white/10 text-white rounded-xl border border-white/10"><Plus size={20}/></button>
               </div>
               <div className="space-y-2">
                 {state.categories.map(c => (
                   <div key={c} className="flex items-center justify-between p-3 bg-dark rounded-xl border border-border">
-                    <span className="text-gray-300">{c}</span>
+                    <span className="text-gray-300 text-sm">{c}</span>
                     <button onClick={() => onRemoveCategory(c)} className="text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
                   </div>
                 ))}

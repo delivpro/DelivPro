@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Play, CheckCircle2, Layout } from 'lucide-react';
+import { X, Play, CheckCircle2, Warehouse } from 'lucide-react';
 import { Delivery } from '../types';
 
 interface DeliveryFormProps {
@@ -8,12 +8,14 @@ interface DeliveryFormProps {
   onSubmit: (delivery: Partial<Delivery>) => void;
   activeDelivery?: Delivery;
   platforms: string[];
+  warehouses: string[];
 }
 
-const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDelivery, platforms }) => {
+const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDelivery, platforms, warehouses }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     platform: platforms[0] || '',
+    warehouse: warehouses[0] || '',
     startTime: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     startKm: '',
     endTime: '',
@@ -21,14 +23,18 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
     value: ''
   });
 
+  const isAmazonFlex = formData.platform === 'Amazon Flex';
+
   useEffect(() => {
     if (activeDelivery) {
       setFormData({
         ...formData,
         date: activeDelivery.date,
         platform: activeDelivery.platform,
+        warehouse: activeDelivery.warehouse || '',
         startTime: activeDelivery.startTime,
         startKm: activeDelivery.startKm.toString(),
+        value: activeDelivery.value?.toString() || '',
         endTime: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       });
     }
@@ -41,15 +47,18 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
         id: activeDelivery.id,
         endTime: formData.endTime,
         endKm: Number(formData.endKm),
-        value: Number(formData.value),
+        // No Amazon Flex, o valor já foi gravado no início
+        value: isAmazonFlex ? activeDelivery.value : Number(formData.value),
         status: 'completed'
       });
     } else {
       onSubmit({
         date: formData.date,
         platform: formData.platform,
+        warehouse: isAmazonFlex ? formData.warehouse : undefined,
         startTime: formData.startTime,
         startKm: Number(formData.startKm),
+        value: isAmazonFlex ? Number(formData.value) : undefined,
         status: 'ongoing'
       });
     }
@@ -73,7 +82,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
           {!activeDelivery ? (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-400 mb-1">Data</label>
                   <input 
                     type="date" 
@@ -83,7 +92,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
                     required
                   />
                 </div>
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-400 mb-1">Plataforma</label>
                   <select 
                     value={formData.platform}
@@ -97,6 +106,24 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
                   </select>
                 </div>
               </div>
+
+              {isAmazonFlex && (
+                <div className="animate-fadeIn">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Barracão</label>
+                  <select 
+                    value={formData.warehouse}
+                    onChange={e => setFormData({ ...formData, warehouse: e.target.value })}
+                    className="w-full bg-dark border border-border rounded-xl px-4 py-2.5 text-white focus:border-primary outline-none appearance-none"
+                    required
+                  >
+                    <option value="" disabled>Selecione um barracão</option>
+                    {warehouses.map(w => (
+                      <option key={w} value={w}>{w}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Hora Início</label>
@@ -120,11 +147,30 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
                   />
                 </div>
               </div>
+
+              {isAmazonFlex && (
+                <div className="animate-fadeIn">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Valor do Bloco (¥)</label>
+                  <input 
+                    type="number" 
+                    placeholder="Ex: 12000"
+                    value={formData.value}
+                    onChange={e => setFormData({ ...formData, value: e.target.value })}
+                    className="w-full bg-dark border border-border rounded-xl px-4 py-3 text-white text-lg font-bold focus:border-primary outline-none"
+                    required
+                  />
+                </div>
+              )}
             </>
           ) : (
             <>
               <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 mb-4">
                 <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Status: Em execução ({activeDelivery.platform})</p>
+                {activeDelivery.warehouse && (
+                  <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                    <Warehouse size={12} /> {activeDelivery.warehouse}
+                  </p>
+                )}
                 <p className="text-sm text-gray-300">Iniciado em {activeDelivery.startTime} • {activeDelivery.startKm} km</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -150,17 +196,19 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({ onClose, onSubmit, activeDe
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Valor Recebido (¥)</label>
-                <input 
-                  type="number" 
-                  placeholder="Ex: 12000"
-                  value={formData.value}
-                  onChange={e => setFormData({ ...formData, value: e.target.value })}
-                  className="w-full bg-dark border border-border rounded-xl px-4 py-3 text-white text-lg font-bold focus:border-primary outline-none"
-                  required
-                />
-              </div>
+              {!isAmazonFlex && (
+                <div className="animate-fadeIn">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Valor Recebido (¥)</label>
+                  <input 
+                    type="number" 
+                    placeholder="Ex: 12000"
+                    value={formData.value}
+                    onChange={e => setFormData({ ...formData, value: e.target.value })}
+                    className="w-full bg-dark border border-border rounded-xl px-4 py-3 text-white text-lg font-bold focus:border-primary outline-none"
+                    required
+                  />
+                </div>
+              )}
             </>
           )}
 
