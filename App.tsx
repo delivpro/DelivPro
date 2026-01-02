@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RefreshCw, Lock } from 'lucide-react';
+import { RefreshCw, Lock, LayoutDashboard, FileText, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Reports from './components/Reports';
@@ -27,12 +27,10 @@ const App: React.FC = () => {
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
-  // Persistência
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // Filtragem de dados por usuário logado
   const userDeliveries = useMemo(() => 
     state.deliveries.filter(d => d.userId === state.currentUser?.id), 
     [state.deliveries, state.currentUser]
@@ -47,18 +45,13 @@ const App: React.FC = () => {
     const user = state.users.find(u => u.email === email && u.password === pass);
     
     if (user) {
-      // Verificar expiração
       if (user.expirationDate !== 'lifetime' && new Date(user.expirationDate) < new Date()) {
         setLoginError('Seu acesso expirou. Entre em contato com o suporte.');
         return;
       }
-
       setState(prev => ({ ...prev, currentUser: user }));
       setLoginError('');
-      
-      if (user.mustChangePassword) {
-        setShowPasswordChange(true);
-      }
+      if (user.mustChangePassword) setShowPasswordChange(true);
     } else {
       setLoginError('E-mail ou senha incorretos.');
     }
@@ -104,7 +97,6 @@ const App: React.FC = () => {
 
   const handleAddDelivery = useCallback(async (deliveryData: Partial<Delivery>) => {
     if (!state.currentUser) return;
-
     const newDelivery: Delivery = deliveryData.id 
       ? { ...state.deliveries.find(d => d.id === deliveryData.id)!, ...deliveryData } as Delivery
       : {
@@ -116,17 +108,12 @@ const App: React.FC = () => {
           startKm: deliveryData.startKm!,
           status: 'ongoing',
         };
-
     setState(prev => {
       if (deliveryData.id) {
-        return {
-          ...prev,
-          deliveries: prev.deliveries.map(d => d.id === deliveryData.id ? newDelivery : d)
-        };
+        return { ...prev, deliveries: prev.deliveries.map(d => d.id === deliveryData.id ? newDelivery : d) };
       }
       return { ...prev, deliveries: [newDelivery, ...prev.deliveries] };
     });
-
     await syncWithApi(deliveryData.id ? 'update_delivery' : 'create_delivery', newDelivery);
   }, [state.deliveries, state.currentUser, syncWithApi]);
 
@@ -147,18 +134,12 @@ const App: React.FC = () => {
   }, [state.currentUser, syncWithApi]);
 
   const handleAddUser = (userData: Partial<User>) => {
-    const newUser: User = {
-      ...userData,
-      id: crypto.randomUUID(),
-    } as User;
+    const newUser: User = { ...userData, id: crypto.randomUUID() } as User;
     setState(prev => ({ ...prev, users: [...prev.users, newUser] }));
   };
 
   const handleUpdateUser = (userData: User) => {
-    setState(prev => ({
-      ...prev,
-      users: prev.users.map(u => u.id === userData.id ? userData : u)
-    }));
+    setState(prev => ({ ...prev, users: prev.users.map(u => u.id === userData.id ? userData : u) }));
   };
 
   const handleDeleteUser = (id: string) => {
@@ -167,35 +148,18 @@ const App: React.FC = () => {
     }
   };
 
-  // Se não estiver logado
-  if (!state.currentUser) {
-    return <Login onLogin={handleLogin} error={loginError} />;
-  }
+  if (!state.currentUser) return <Login onLogin={handleLogin} error={loginError} />;
 
-  // Se precisar trocar senha
   if (showPasswordChange) {
     return (
       <div className="fixed inset-0 bg-dark z-[200] flex items-center justify-center p-4">
         <div className="bg-card w-full max-w-md border border-border rounded-2xl p-8 shadow-2xl">
-          <div className="flex justify-center mb-6 text-primary">
-            <Lock size={48} />
-          </div>
+          <div className="flex justify-center mb-6 text-primary"><Lock size={48} /></div>
           <h2 className="text-2xl font-bold text-white text-center mb-2">Primeiro Acesso</h2>
-          <p className="text-gray-400 text-center mb-8">Para sua segurança, defina uma nova senha definitiva.</p>
+          <p className="text-gray-400 text-center mb-8">Defina sua nova senha definitiva.</p>
           <div className="space-y-4">
-            <input 
-              type="password" 
-              placeholder="Nova senha (mín. 6 chars)"
-              className="w-full bg-dark border border-border rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-            />
-            <button 
-              onClick={handleUpdatePassword}
-              className="w-full bg-primary text-dark font-bold py-3 rounded-xl hover:opacity-90"
-            >
-              Confirmar Nova Senha
-            </button>
+            <input type="password" placeholder="Nova senha" className="w-full bg-dark border border-border rounded-xl px-4 py-3 text-white outline-none" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            <button onClick={handleUpdatePassword} className="w-full bg-primary text-dark font-bold py-3 rounded-xl hover:opacity-90">Confirmar</button>
           </div>
         </div>
       </div>
@@ -205,29 +169,17 @@ const App: React.FC = () => {
   const activeDelivery = userDeliveries.find(d => d.status === 'ongoing');
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex flex-col md:flex-row min-h-screen relative">
       {isLoading && (
-        <div className="fixed bottom-4 right-4 z-[60] bg-primary text-dark px-4 py-2 rounded-full font-bold shadow-2xl flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-20 md:bottom-4 right-4 z-[60] bg-primary text-dark px-4 py-2 rounded-full font-bold shadow-2xl flex items-center gap-2 animate-bounce">
           <RefreshCw size={16} className="animate-spin" /> Sincronizando...
         </div>
       )}
 
-      <Sidebar 
-        activeView={activeView} 
-        setActiveView={setActiveView} 
-        isCollapsed={isCollapsed} 
-        setIsCollapsed={setIsCollapsed} 
-        onLogout={handleLogout}
-      />
+      <Sidebar activeView={activeView} setActiveView={setActiveView} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onLogout={handleLogout} />
       
-      <main className="flex-1 bg-dark overflow-y-auto">
-        {activeView === 'dashboard' && (
-          <Dashboard 
-            state={{ ...state, deliveries: userDeliveries, expenses: userExpenses }} 
-            onOpenDelivery={() => setIsDeliveryModalOpen(true)}
-            onOpenExpense={() => setIsExpenseModalOpen(true)}
-          />
-        )}
+      <main className="flex-1 bg-dark overflow-y-auto pb-24 md:pb-0">
+        {activeView === 'dashboard' && <Dashboard state={{ ...state, deliveries: userDeliveries, expenses: userExpenses }} onOpenDelivery={() => setIsDeliveryModalOpen(true)} onOpenExpense={() => setIsExpenseModalOpen(true)} />}
         {activeView === 'reports' && <Reports state={{ ...state, deliveries: userDeliveries, expenses: userExpenses }} />}
         {activeView === 'settings' && (
           <Settings 
@@ -238,29 +190,33 @@ const App: React.FC = () => {
             onAddPlatform={p => setState(prev => ({ ...prev, platforms: [...prev.platforms, p] }))}
             onRemovePlatform={p => setState(prev => ({ ...prev, platforms: prev.platforms.filter(plat => plat !== p) }))}
             onUpdateApiSettings={(url, enabled) => setState(prev => ({ ...prev, apiUrl: url, isSyncEnabled: enabled }))}
-            onAddUser={handleAddUser}
-            onUpdateUser={handleUpdateUser}
-            onDeleteUser={handleDeleteUser}
+            onAddUser={handleAddUser} onUpdateUser={handleUpdateUser} onDeleteUser={handleDeleteUser}
           />
         )}
       </main>
 
-      {isDeliveryModalOpen && (
-        <DeliveryForm 
-          onClose={() => setIsDeliveryModalOpen(false)} 
-          onSubmit={handleAddDelivery}
-          activeDelivery={activeDelivery}
-          platforms={state.platforms}
-        />
-      )}
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around items-center h-16 md:hidden z-40 px-2">
+        <button onClick={() => setActiveView('dashboard')} className={`flex flex-col items-center justify-center w-full h-full gap-1 ${activeView === 'dashboard' ? 'text-primary' : 'text-gray-500'}`}>
+          <LayoutDashboard size={20} />
+          <span className="text-[10px] font-bold">Painel</span>
+        </button>
+        <button onClick={() => setActiveView('reports')} className={`flex flex-col items-center justify-center w-full h-full gap-1 ${activeView === 'reports' ? 'text-primary' : 'text-gray-500'}`}>
+          <FileText size={20} />
+          <span className="text-[10px] font-bold">Relatórios</span>
+        </button>
+        <button onClick={() => setActiveView('settings')} className={`flex flex-col items-center justify-center w-full h-full gap-1 ${activeView === 'settings' ? 'text-primary' : 'text-gray-500'}`}>
+          <SettingsIcon size={20} />
+          <span className="text-[10px] font-bold">Ajustes</span>
+        </button>
+        <button onClick={handleLogout} className="flex flex-col items-center justify-center w-full h-full gap-1 text-red-400/70">
+          <LogOut size={20} />
+          <span className="text-[10px] font-bold">Sair</span>
+        </button>
+      </nav>
 
-      {isExpenseModalOpen && (
-        <ExpenseForm 
-          onClose={() => setIsExpenseModalOpen(false)} 
-          onSubmit={handleAddExpense}
-          categories={state.categories}
-        />
-      )}
+      {isDeliveryModalOpen && <DeliveryForm onClose={() => setIsDeliveryModalOpen(false)} onSubmit={handleAddDelivery} activeDelivery={activeDelivery} platforms={state.platforms} />}
+      {isExpenseModalOpen && <ExpenseForm onClose={() => setIsExpenseModalOpen(false)} onSubmit={handleAddExpense} categories={state.categories} />}
     </div>
   );
 };
